@@ -325,10 +325,10 @@ class BarRenderer<D>
     // * Fully out of component bounds, do not draw.
 
     final componentBounds = this.componentBounds!;
-    final barOutsideBounds = renderingVertically
-        ? barStack.fullStackRect.left < componentBounds.left ||
+    final barOutsideBounds = 
+         barStack.fullStackRect.left < componentBounds.left ||
             barStack.fullStackRect.right > componentBounds.right
-        : barStack.fullStackRect.top < componentBounds.top ||
+        || barStack.fullStackRect.top < componentBounds.top ||
             barStack.fullStackRect.bottom > componentBounds.bottom;
 
     // TODO: When we have initial viewport, add image test for
@@ -369,7 +369,7 @@ class BarRenderer<D>
 
     final componentBounds = this.componentBounds!;
 
-    if (renderingVertically) {
+    if (!renderingVertically) {
       // Only clip at the start and end so that the bar's width stays within
       // the viewport, but any bar decorations above the bar can still show.
       left = max(componentBounds.left, barStackRect.left);

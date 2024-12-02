@@ -174,6 +174,8 @@ class PanBehavior<D> implements ChartBehavior<D> {
     }
 
     final chart = this.chart!;
+
+    print('domainChange: ${domainChange}');
     domainAxis.setViewportSettings(domainScalingFactor, domainChange,
         drawAreaWidth: chart.drawAreaBounds.width,
         drawAreaHeight: chart.drawAreaBounds.height);

@@ -89,6 +89,7 @@ class PanAndZoomBehavior<D> extends PanBehavior<D> {
     if (domainAxis == null) {
       return false;
     }
+    
 
     // This is set during onDragUpdate and NOT onDragStart because we don't yet
     // know during onDragStart whether pan/zoom behavior is panning or zooming.
@@ -101,11 +102,26 @@ class PanAndZoomBehavior<D> extends PanBehavior<D> {
     final newScalingFactor =
         min(max(_scalingFactor * scale, _minScalingFactor), _maxScalingFactor);
 
+    double decimalOfOriginal = (domainAxis.viewportTranslatePx - localPosition.x - 20)/(_scalingFactor*chart.drawAreaBounds.width);
+    double decimalOfNew = (newScalingFactor * chart.drawAreaBounds.width * decimalOfOriginal);
+    double offsetNew = decimalOfNew + (chart.drawAreaBounds.width/2);
+
+
+    print('newScalingFactor: $newScalingFactor');
+    print('originalScaling: $_scalingFactor');
+    print('domainAxis.viewportTranslatePx: ${domainAxis.viewportTranslatePx}');
+    print('offsetNew: ${offsetNew}');
+    print('decimalOfNew: ${decimalOfNew}');
+    print('chart.drawAreaBounds.width: ${chart.drawAreaBounds.width}');
+    print('localPosition: $localPosition');
+    print('decimalOfOriginal: ${decimalOfOriginal}');
+    print('\n');
+
     domainAxis.setViewportSettings(
         newScalingFactor, domainAxis.viewportTranslatePx,
         drawAreaWidth: chart.drawAreaBounds.width,
         drawAreaHeight: chart.drawAreaBounds.height);
-
+    
     chart.redraw(skipAnimation: true, skipLayout: true);
 
     return true;

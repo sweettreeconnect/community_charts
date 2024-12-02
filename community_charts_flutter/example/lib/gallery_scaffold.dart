@@ -57,7 +57,7 @@ class _GalleryScaffoldState extends State<GalleryScaffold> {
       body: new Padding(
           padding: const EdgeInsets.all(8.0),
           child: new Column(children: <Widget>[
-            new SizedBox(height: 250.0, child: widget.childBuilder()),
+            new SizedBox(height: 800.0, child: widget.childBuilder()),
           ])),
       floatingActionButton: new FloatingActionButton(
           onPressed: _handleButtonPress, child: new Icon(Icons.refresh)),

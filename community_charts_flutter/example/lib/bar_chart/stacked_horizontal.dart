@@ -1,158 +1,127 @@
-// Copyright 2018 the Charts project authors. Please see the AUTHORS file
-// for details.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-/// Bar chart example
-// EXCLUDE_FROM_GALLERY_DOCS_START
 import 'dart:math';
-// EXCLUDE_FROM_GALLERY_DOCS_END
 import 'package:flutter/material.dart';
-import 'package:community_charts_flutter/community_charts_flutter.dart'
-    as charts;
+import 'package:community_charts_flutter/community_charts_flutter.dart' as charts;
 
-class StackedHorizontalBarChart extends StatelessWidget {
+class StackedHorizontalBarChart extends StatefulWidget {
   final List<charts.Series<dynamic, String>> seriesList;
   final bool animate;
 
   StackedHorizontalBarChart(this.seriesList, {this.animate = false});
 
-  /// Creates a stacked [BarChart] with sample data and no transition.
-  factory StackedHorizontalBarChart.withSampleData() {
-    return new StackedHorizontalBarChart(
-      _createSampleData(),
-      // Disable animations for image tests.
-      animate: false,
-    );
-  }
-
-  // EXCLUDE_FROM_GALLERY_DOCS_START
-  // This section is excluded from being copied to the gallery.
-  // It is used for creating random series data to demonstrate animation in
-  // the example app only.
   factory StackedHorizontalBarChart.withRandomData() {
-    return new StackedHorizontalBarChart(_createRandomData());
+    return StackedHorizontalBarChart(_createRandomData());
   }
 
-  /// Create random data.
+  static List<double> generateRandomDataForDay(double target, int parts) {
+    final random = Random();
+    List<double> values = List.generate(parts, (_) => random.nextDouble());
+    double sum = values.reduce((a, b) => a + b);
+    values = values.map((value) => (value / sum) * target).toList();
+    return values;
+  }
+
   static List<charts.Series<OrdinalSales, String>> _createRandomData() {
-    final random = new Random();
+    final random = Random();
+    final daysInMonth = 8;
+    final List<OrdinalSales> data = [];
 
-    final desktopSalesData = [
-      new OrdinalSales('2014', random.nextInt(100)),
-      new OrdinalSales('2015', random.nextInt(100)),
-      new OrdinalSales('2016', random.nextInt(100)),
-      new OrdinalSales('2017', random.nextInt(100)),
-    ];
+    for (int day = 1; day <= daysInMonth; day++) {
+      List<double> dailyData = generateRandomDataForDay(24.0, 8);
 
-    final tableSalesData = [
-      new OrdinalSales('2014', random.nextInt(100)),
-      new OrdinalSales('2015', random.nextInt(100)),
-      new OrdinalSales('2016', random.nextInt(100)),
-      new OrdinalSales('2017', random.nextInt(100)),
-    ];
+      for (var value in dailyData) {
+        data.add(
+          OrdinalSales('$day June\nBed Mat', value),
+        );
+      }
+    }
 
-    final mobileSalesData = [
-      new OrdinalSales('2014', random.nextInt(100)),
-      new OrdinalSales('2015', random.nextInt(100)),
-      new OrdinalSales('2016', random.nextInt(100)),
-      new OrdinalSales('2017', random.nextInt(100)),
+    final colors = [
+      charts.MaterialPalette.red.shadeDefault,
+      charts.MaterialPalette.green.shadeDefault,
     ];
 
     return [
-      new charts.Series<OrdinalSales, String>(
-        id: 'Desktop',
+      charts.Series<OrdinalSales, String>(
+        id: 'Bed mat data',
         domainFn: (OrdinalSales sales, _) => sales.year,
         measureFn: (OrdinalSales sales, _) => sales.sales,
-        data: desktopSalesData,
-      ),
-      new charts.Series<OrdinalSales, String>(
-        id: 'Tablet',
-        domainFn: (OrdinalSales sales, _) => sales.year,
-        measureFn: (OrdinalSales sales, _) => sales.sales,
-        data: tableSalesData,
-      ),
-      new charts.Series<OrdinalSales, String>(
-        id: 'Mobile',
-        domainFn: (OrdinalSales sales, _) => sales.year,
-        measureFn: (OrdinalSales sales, _) => sales.sales,
-        data: mobileSalesData,
+        colorFn: (OrdinalSales sales, index) => colors[index! % colors.length],
+        data: data,
       ),
     ];
   }
-  // EXCLUDE_FROM_GALLERY_DOCS_END
+
+  @override
+  _StackedHorizontalBarChartState createState() => _StackedHorizontalBarChartState();
+}
+
+class _StackedHorizontalBarChartState extends State<StackedHorizontalBarChart> {
+  double minMeasure = 0;
+  double maxMeasure = 24;
+
+  void _onHorizontalDragUpdate(DragUpdateDetails details) {
+    setState(() {
+      double delta = details.primaryDelta ?? 0;
+      minMeasure += delta * 0.5;
+      maxMeasure += delta * 0.5;
+    });
+  }
+
+  void _onScaleUpdate(ScaleUpdateDetails details) {
+    setState(() {
+      double scale = details.scale;
+      double center = (minMeasure + maxMeasure) / 2;
+      double newRange = (maxMeasure - minMeasure) / scale;
+      minMeasure = center - newRange / 2;
+      maxMeasure = center + newRange / 2;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    // For horizontal bar charts, set the [vertical] flag to false.
-    return new charts.BarChart(
-      seriesList,
-      animate: animate,
-      barGroupingType: charts.BarGroupingType.stacked,
-      vertical: false,
+    return GestureDetector(
+      onHorizontalDragUpdate: _onHorizontalDragUpdate,
+      onScaleUpdate: _onScaleUpdate,
+      child: charts.BarChart(
+        widget.seriesList,
+        animate: widget.animate,
+        barGroupingType: charts.BarGroupingType.stacked,
+        vertical: false,
+        primaryMeasureAxis: charts.NumericAxisSpec(
+          viewport: charts.NumericExtents(minMeasure, maxMeasure),
+          renderSpec: charts.GridlineRendererSpec(
+            labelStyle: charts.TextStyleSpec(
+              fontSize: 14,
+              fontWeight: '400',
+              color: charts.MaterialPalette.black,
+            ),
+            lineStyle: charts.LineStyleSpec(
+              thickness: 2,
+              color: charts.MaterialPalette.gray.shadeDefault,
+            ),
+          ),
+        ),
+        domainAxis: charts.OrdinalAxisSpec(
+          renderSpec: charts.SmallTickRendererSpec(
+            labelStyle: charts.TextStyleSpec(
+              fontSize: 14,
+              fontWeight: '400',
+              color: charts.MaterialPalette.black,
+            ),
+            lineStyle: charts.LineStyleSpec(
+              thickness: 2,
+              color: charts.MaterialPalette.gray.shadeDefault,
+            ),
+          ),
+        ),
+      ),
     );
-  }
-
-  /// Create series list with multiple series
-  static List<charts.Series<OrdinalSales, String>> _createSampleData() {
-    final desktopSalesData = [
-      new OrdinalSales('2014', 5),
-      new OrdinalSales('2015', 25),
-      new OrdinalSales('2016', 100),
-      new OrdinalSales('2017', 75),
-    ];
-
-    final tableSalesData = [
-      new OrdinalSales('2014', 25),
-      new OrdinalSales('2015', 50),
-      new OrdinalSales('2016', 10),
-      new OrdinalSales('2017', 20),
-    ];
-
-    final mobileSalesData = [
-      new OrdinalSales('2014', 10),
-      new OrdinalSales('2015', 15),
-      new OrdinalSales('2016', 50),
-      new OrdinalSales('2017', 45),
-    ];
-
-    return [
-      new charts.Series<OrdinalSales, String>(
-        id: 'Desktop',
-        domainFn: (OrdinalSales sales, _) => sales.year,
-        measureFn: (OrdinalSales sales, _) => sales.sales,
-        data: desktopSalesData,
-      ),
-      new charts.Series<OrdinalSales, String>(
-        id: 'Tablet',
-        domainFn: (OrdinalSales sales, _) => sales.year,
-        measureFn: (OrdinalSales sales, _) => sales.sales,
-        data: tableSalesData,
-      ),
-      new charts.Series<OrdinalSales, String>(
-        id: 'Mobile',
-        domainFn: (OrdinalSales sales, _) => sales.year,
-        measureFn: (OrdinalSales sales, _) => sales.sales,
-        data: mobileSalesData,
-      ),
-    ];
   }
 }
 
-/// Sample ordinal data type.
 class OrdinalSales {
   final String year;
-  final int sales;
+  final double sales;
 
   OrdinalSales(this.year, this.sales);
 }

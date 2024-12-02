@@ -80,6 +80,9 @@ class HorizontalBarLabelChart extends StatelessWidget {
     return new charts.BarChart(
       seriesList,
       animate: animate,
+      behaviors: [
+      new charts.PanAndZoomBehavior(),
+    ],
       vertical: false,
       // Set a bar label decorator.
       // Example configuring different styles for inside/outside:
