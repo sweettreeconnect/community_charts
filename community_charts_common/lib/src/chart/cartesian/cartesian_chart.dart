@@ -411,7 +411,7 @@ abstract class CartesianChart<D> extends BaseChart<D> {
 
     if (vertical) {
       domainAxis
-        ..axisOrientation = AxisOrientation.bottom
+        ..axisOrientation = AxisOrientation.top
         ..reverseOutputRange = reverseAxisDirection;
 
       _primaryMeasureAxis
