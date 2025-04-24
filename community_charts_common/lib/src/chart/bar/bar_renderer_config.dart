@@ -38,7 +38,7 @@ class BarRendererConfig<D> extends BaseBarRendererConfig<D> {
     int layoutPaintOrder = LayoutViewPaintOrder.bar,
     int minBarLengthPx = 0,
     int? maxBarWidthPx,
-    int stackedBarPaddingPx = 1,
+    int stackedBarPaddingPx = 0,
     double strokeWidthPx = 0.0,
     this.barRendererDecorator,
     SymbolRenderer? symbolRenderer,
