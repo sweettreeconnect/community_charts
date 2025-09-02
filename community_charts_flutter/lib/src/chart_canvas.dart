@@ -48,8 +48,7 @@ class ChartCanvas implements common.ChartCanvas {
   ChartCanvas(this.canvas, this.graphicsFactory);
 
   @override
-  void drawCircleSector(Point center, double radius, double innerRadius,
-      double startAngle, double endAngle,
+  void drawCircleSector(Point center, double radius, double innerRadius, double startAngle, double endAngle,
       {common.Color? fill, common.Color? stroke, double? strokeWidthPx}) {
     CircleSectorPainter.draw(
       canvas: canvas,
@@ -64,8 +63,7 @@ class ChartCanvas implements common.ChartCanvas {
   }
 
   @override
-  void drawLink(
-      common.Link link, common.LinkOrientation orientation, common.Color fill) {
+  void drawLink(common.Link link, common.LinkOrientation orientation, common.Color fill) {
     // TODO: Implement drawLink for flutter.
     throw ("Flutter drawLink() has not been implemented.");
   }
@@ -136,41 +134,81 @@ class ChartCanvas implements common.ChartCanvas {
     return new ui.Gradient.linear(
       new Offset(left, top),
       new Offset(left, top - rect_top_gradient_pixels),
-      [
-        new Color.fromARGB(fill.a, fill.r, fill.g, fill.b),
-        new Color.fromARGB(0, fill.r, fill.g, fill.b)
-      ],
+      [new Color.fromARGB(fill.a, fill.r, fill.g, fill.b), new Color.fromARGB(0, fill.r, fill.g, fill.b)],
     );
   }
 
   @override
-  void drawRect(Rectangle<num> bounds,
-      {common.Color? fill,
-      common.FillPatternType? pattern,
-      common.Color? stroke,
-      double? strokeWidthPx,
-      Rectangle<num>? drawAreaBounds}) {
+  void drawRect(
+    Rectangle<num> bounds, {
+    common.Color? fill,
+    common.FillPatternType? pattern,
+    List<Color>? gradient,
+    common.Color? stroke,
+    double? strokeWidthPx,
+    Rectangle<num>? drawAreaBounds,
+  }) {
     // TODO: remove this explicit `bool` type when no longer needed
     // to work around https://github.com/dart-lang/language/issues/1785
-    final bool drawStroke =
-        (strokeWidthPx != null && strokeWidthPx > 0.0 && stroke != null);
+    final bool drawStroke = (strokeWidthPx != null && strokeWidthPx > 0.0 && stroke != null);
 
     final strokeWidthOffset = (drawStroke ? strokeWidthPx : 0);
 
     // Factor out stroke width, if a stroke is enabled.
-    final fillRectBounds = new Rectangle<num>(
-        bounds.left + strokeWidthOffset / 2,
-        bounds.top + strokeWidthOffset / 2,
-        bounds.width - strokeWidthOffset,
-        bounds.height - strokeWidthOffset);
+    final fillRectBounds = new Rectangle<num>(bounds.left + strokeWidthOffset / 2, bounds.top + strokeWidthOffset / 2,
+        bounds.width - strokeWidthOffset, bounds.height - strokeWidthOffset);
 
     switch (pattern) {
       case common.FillPatternType.forwardHatch:
-        _drawForwardHatchPattern(fillRectBounds, canvas,
-            fill: fill!, drawAreaBounds: drawAreaBounds);
+        _drawForwardHatchPattern(fillRectBounds, canvas, fill: fill!, drawAreaBounds: drawAreaBounds);
         break;
 
       case common.FillPatternType.solid:
+        // Use separate rect for drawing stroke
+        _paint.color = new Color.fromARGB(fill!.a, fill.r, fill.g, fill.b);
+        _paint.style = PaintingStyle.fill;
+
+        // Apply a gradient to the top [rect_top_gradient_pixels] to transparent
+        // if the rectangle is higher than the [drawAreaBounds] top.
+        if (drawAreaBounds != null && bounds.top < drawAreaBounds.top) {
+          _paint.shader = _createHintGradient(drawAreaBounds.left.toDouble(),
+              drawAreaBounds.top.toDouble(), fill);
+        }
+
+        canvas.drawRect(_getRect(fillRectBounds), _paint);
+        break;
+      
+      case common.FillPatternType.blend:
+        // Use separate rect for drawing stroke
+        final Rect rect = _getRect(fillRectBounds);
+        final Color fillColor = Color.fromARGB(fill!.a, fill.r, fill.g, fill.b);
+
+        if (gradient != null) { // if the gradient isn't null, give it a gradient using the supplied colors
+          _paint
+            ..shader = ui.Gradient.linear(
+              Offset(rect.left, rect.center.dy),
+              Offset(rect.right, rect.center.dy),
+              gradient,
+            )
+            ..style = PaintingStyle.fill;
+        }
+        else { // else fill it with whatever color is there
+          _paint
+            ..color = fillColor
+            ..style = PaintingStyle.fill;
+        }
+
+        // Apply a gradient to the top [rect_top_gradient_pixels] to transparent
+        // if the rectangle is higher than the [drawAreaBounds] top.
+        if (drawAreaBounds != null && bounds.top < drawAreaBounds.top) {
+          debugPrint('outside area');
+          _paint.shader = _createHintGradient(drawAreaBounds.left.toDouble(), drawAreaBounds.top.toDouble(), fill);
+        }
+
+        canvas.drawRect(_getRect(fillRectBounds), _paint);
+        _paint.shader = null;
+        break;
+
       default:
         // Use separate rect for drawing stroke
         _paint.color = new Color.fromARGB(fill!.a, fill.r, fill.g, fill.b);
@@ -236,8 +274,7 @@ class ChartCanvas implements common.ChartCanvas {
   }
 
   @override
-  void drawBarStack(common.CanvasBarStack barStack,
-      {Rectangle<num>? drawAreaBounds}) {
+  void drawBarStack(common.CanvasBarStack barStack, {Rectangle<num>? drawAreaBounds}) {
     // only clip if rounded rect.
 
     // Clip a rounded rect for the whole region if rounded bars.
@@ -261,6 +298,7 @@ class ChartCanvas implements common.ChartCanvas {
       // TODO: Add configuration for hiding stack line.
       // TODO: Don't draw stroke on bottom of bars.
       final segment = barStack.segments[barIndex];
+
       drawRect(segment.bounds,
           fill: segment.fill,
           pattern: segment.pattern,
@@ -275,8 +313,7 @@ class ChartCanvas implements common.ChartCanvas {
   }
 
   @override
-  void drawText(common.TextElement textElement, int offsetX, int offsetY,
-      {double rotation = 0.0}) {
+  void drawText(common.TextElement textElement, int offsetX, int offsetY, {double rotation = 0.0}) {
     // Must be Flutter TextElement.
     assert(textElement is TextElement);
 
@@ -312,8 +349,7 @@ class ChartCanvas implements common.ChartCanvas {
 
       offsetY -= flutterTextElement.verticalFontShift;
 
-      textElement.textPainter!
-          .paint(canvas, new Offset(offsetX.toDouble(), offsetY.toDouble()));
+      textElement.textPainter!.paint(canvas, new Offset(offsetX.toDouble(), offsetY.toDouble()));
     }
   }
 
@@ -332,10 +368,7 @@ class ChartCanvas implements common.ChartCanvas {
   /// Convert dart:math [Rectangle] to Flutter [Rect].
   Rect _getRect(Rectangle<num> rectangle) {
     return new Rect.fromLTWH(
-        rectangle.left.toDouble(),
-        rectangle.top.toDouble(),
-        rectangle.width.toDouble(),
-        rectangle.height.toDouble());
+        rectangle.left.toDouble(), rectangle.top.toDouble(), rectangle.width.toDouble(), rectangle.height.toDouble());
   }
 
   /// Convert dart:math [Rectangle] and to Flutter [RRect].
@@ -347,14 +380,10 @@ class ChartCanvas implements common.ChartCanvas {
     bool roundBottomLeft = false,
     bool roundBottomRight = false,
   }) {
-    final cornerRadius =
-        radius == 0 ? Radius.zero : new Radius.circular(radius);
+    final cornerRadius = radius == 0 ? Radius.zero : new Radius.circular(radius);
 
     return new RRect.fromLTRBAndCorners(
-        rectangle.left.toDouble(),
-        rectangle.top.toDouble(),
-        rectangle.right.toDouble(),
-        rectangle.bottom.toDouble(),
+        rectangle.left.toDouble(), rectangle.top.toDouble(), rectangle.right.toDouble(), rectangle.bottom.toDouble(),
         topLeft: roundTopLeft ? cornerRadius : Radius.zero,
         topRight: roundTopRight ? cornerRadius : Radius.zero,
         bottomLeft: roundBottomLeft ? cornerRadius : Radius.zero,
@@ -374,14 +403,12 @@ class ChartCanvas implements common.ChartCanvas {
     fill ??= common.StyleFactory.style.black;
 
     // Fill in the shape with a solid background color.
-    _paint.color = new Color.fromARGB(
-        background.a, background.r, background.g, background.b);
+    _paint.color = new Color.fromARGB(background.a, background.r, background.g, background.b);
     _paint.style = PaintingStyle.fill;
 
     // Apply a gradient the background if bounds exceed the draw area.
     if (drawAreaBounds != null && bounds.top < drawAreaBounds.top) {
-      _paint.shader = _createHintGradient(drawAreaBounds.left.toDouble(),
-          drawAreaBounds.top.toDouble(), background);
+      _paint.shader = _createHintGradient(drawAreaBounds.left.toDouble(), drawAreaBounds.top.toDouble(), background);
     }
 
     canvas.drawRect(_getRect(bounds), _paint);
@@ -414,8 +441,7 @@ class ChartCanvas implements common.ChartCanvas {
     // Create gradient for line painter if top bounds exceeded.
     ui.Shader? lineShader;
     if (drawAreaBounds != null && bounds.top < drawAreaBounds.top) {
-      lineShader = _createHintGradient(
-          drawAreaBounds.left.toDouble(), drawAreaBounds.top.toDouble(), fill);
+      lineShader = _createHintGradient(drawAreaBounds.left.toDouble(), drawAreaBounds.top.toDouble(), fill);
     }
 
     for (int i = start; i < end; i = i + offset) {

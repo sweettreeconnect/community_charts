@@ -14,15 +14,16 @@
 // limitations under the License.
 
 import 'dart:math' show Rectangle, min, max, Point;
-
+import 'dart:ui' as ui show Color;
 import '../../common/color.dart' show Color;
-import 'chart_canvas.dart' show FillPatternType;
+import 'chart_canvas.dart' show FillPatternType; 
 
 /// A rectangle to be painted by [ChartCanvas].
 class CanvasRect {
   final Rectangle<int> bounds;
   final List<int>? dashPattern;
   final Color? fill;
+  final List<ui.Color>? gradient;
   final FillPatternType? pattern;
   final Color? stroke;
   final double? strokeWidthPx;
@@ -30,6 +31,7 @@ class CanvasRect {
   CanvasRect(this.bounds,
       {this.dashPattern,
       this.fill,
+      this.gradient, 
       this.pattern,
       this.stroke,
       this.strokeWidthPx});

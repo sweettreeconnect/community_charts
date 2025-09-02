@@ -16,10 +16,12 @@
 import '../../common/color.dart' show Color;
 import '../common/chart_canvas.dart' show getAnimatedColor, FillPatternType;
 import '../common/processed_series.dart' show ImmutableSeries;
+import 'dart:ui' as ui show Color;
 
 abstract class BaseBarRendererElement {
   int? barStackIndex;
   Color? color;
+  List<ui.Color>? gradient;
   num? cumulativeTotal;
   List<int>? dashPattern;
   Color? fillColor;
@@ -36,6 +38,7 @@ abstract class BaseBarRendererElement {
   BaseBarRendererElement.clone(BaseBarRendererElement other) {
     barStackIndex = other.barStackIndex;
     color = other.color != null ? Color.fromOther(color: other.color!) : null;
+    gradient = other.gradient != null ? other.gradient : null;
     cumulativeTotal = other.cumulativeTotal;
     dashPattern = other.dashPattern;
     fillColor = other.fillColor != null

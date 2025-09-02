@@ -19,6 +19,8 @@ import '../chart/common/datum_details.dart'
     show DomainFormatter, MeasureFormatter;
 import '../common/color.dart' show Color;
 import '../common/typed_registry.dart' show TypedRegistry, TypedKey;
+import 'dart:ui' as ui show Color;
+
 
 class Series<T, D> {
   final String id;
@@ -80,6 +82,9 @@ class Series<T, D> {
   /// on the chart using a mapping function.
   final AccessorFn<Color>? colorFn;
 
+  /// creates a gradient for each bar
+  final AccessorFn<List<ui.Color>>? gradientFn;
+
   /// [dashPatternFn] returns the dash pattern for a given data value.
   final AccessorFn<List<int>?>? dashPatternFn;
 
@@ -112,6 +117,7 @@ class Series<T, D> {
       Color? seriesColor,
       TypedAccessorFn<T, Color>? areaColorFn,
       TypedAccessorFn<T, Color>? colorFn,
+      TypedAccessorFn<T, List<ui.Color>>? gradientFn,
       TypedAccessorFn<T, List<int>?>? dashPatternFn,
       TypedAccessorFn<T, DomainFormatter<D>>? domainFormatterFn,
       TypedAccessorFn<T, D?>? domainLowerBoundFn,
@@ -139,6 +145,10 @@ class Series<T, D> {
         : (int? index) => areaColorFn(data[index!], index);
     final _colorFn =
         colorFn == null ? null : (int? index) => colorFn(data[index!], index);
+    final _gradientFn =
+        gradientFn == null
+        ? null
+         : (int? index) => gradientFn(data[index!], index);    
     final _dashPatternFn = dashPatternFn == null
         ? null
         : (int? index) => dashPatternFn(data[index!], index);
@@ -198,6 +208,7 @@ class Series<T, D> {
       displayName: displayName,
       areaColorFn: _areaColorFn,
       colorFn: _colorFn,
+      gradientFn: _gradientFn,
       dashPatternFn: _dashPatternFn,
       domainFormatterFn: _domainFormatterFn,
       domainLowerBoundFn: _domainLowerBoundFn,
@@ -229,6 +240,7 @@ class Series<T, D> {
     required this.displayName,
     required this.areaColorFn,
     required this.colorFn,
+    required this.gradientFn,
     required this.dashPatternFn,
     required this.domainFormatterFn,
     required this.domainLowerBoundFn,

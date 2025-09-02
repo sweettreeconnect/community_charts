@@ -274,9 +274,11 @@ class BarRenderer<D>
               );
       }
 
+
       bars.add(CanvasRect(bounds!,
           dashPattern: bar.dashPattern,
           fill: bar.fillColor,
+          gradient: bar.gradient,
           pattern: bar.fillPattern,
           stroke: bar.color,
           strokeWidthPx: bar.strokeWidthPx));

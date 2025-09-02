@@ -177,7 +177,8 @@ Color getAnimatedColor(Color previous, Color target, double animationPercent) {
 ///   on top of a bar filled with the fill color.
 /// * [solid] defines a simple bar filled with the fill color. This is the
 ///   default pattern for bars.
-enum FillPatternType { forwardHatch, solid }
+/// * [blend] is a bar filled with a gradient of color defined using the start and stop color and the palette
+enum FillPatternType { forwardHatch, solid, blend }
 
 /// Defines the blend modes to use for drawing on canvas.
 enum BlendMode {
