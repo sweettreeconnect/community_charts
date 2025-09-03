@@ -14,6 +14,7 @@
 // limitations under the License.
 
 import 'dart:math' show max, min, Rectangle;
+import 'dart:ui' as ui show Color;
 
 import 'package:meta/meta.dart' show protected;
 
@@ -139,6 +140,7 @@ class BarRenderer<D>
       List<int>? dashPattern,
       dynamic datum,
       Color? color,
+      List<ui.Color>? gradient,
       required BarRendererElement<D> details,
       D? domainValue,
       required ImmutableAxis<D> domainAxis,
@@ -161,6 +163,7 @@ class BarRenderer<D>
         key: key, datum: datum, series: series, domainValue: domainValue)
       ..setNewTarget(makeBarRendererElement(
           color: color,
+          gradient: gradient,
           dashPattern: dashPattern,
           details: details,
           domainValue: domainValue,
@@ -187,6 +190,7 @@ class BarRenderer<D>
   @override
   BarRendererElement<D> makeBarRendererElement(
       {Color? color,
+      List<ui.Color>? gradient,
       List<int>? dashPattern,
       required BarRendererElement<D> details,
       D? domainValue,
@@ -208,6 +212,7 @@ class BarRenderer<D>
       bool? measureIsNegative}) {
     return BarRendererElement<D>()
       ..color = color
+      ..gradient = gradient
       ..dashPattern = dashPattern
       ..fillColor = fillColor
       ..fillPattern = fillPattern

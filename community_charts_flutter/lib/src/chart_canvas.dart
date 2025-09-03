@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'dart:ui' as ui show Gradient, Shader;
+import 'dart:ui' as ui show Gradient, Shader, Rect, Offset, BlendMode;
 import 'dart:math' show Point, Rectangle, max;
 import 'package:community_charts_common/community_charts_common.dart' as common
     show
@@ -88,6 +88,13 @@ class ChartCanvas implements common.ChartCanvas {
         strokeWidthPx: strokeWidthPx,
         dashPattern: dashPattern);
   }
+
+  ui.Rect asUiRect(Rectangle<num> r) =>
+    ui.Rect.fromLTWH(r.left.toDouble(), r.top.toDouble(), r.width.toDouble(), r.height.toDouble());
+
+  List<double> _evenStops(int n) =>
+      List<double>.generate(n, (i) => n == 1 ? 1.0 : i / (n - 1));
+
 
   @override
   void drawPie(common.CanvasPie canvasPie) {
@@ -180,33 +187,56 @@ class ChartCanvas implements common.ChartCanvas {
       
       case common.FillPatternType.blend:
         // Use separate rect for drawing stroke
-        final Rect rect = _getRect(fillRectBounds);
+        final ui.Rect rect = asUiRect(fillRectBounds);
         final Color fillColor = Color.fromARGB(fill!.a, fill.r, fill.g, fill.b);
 
-        if (gradient != null) { // if the gradient isn't null, give it a gradient using the supplied colors
-          _paint
-            ..shader = ui.Gradient.linear(
-              Offset(rect.left, rect.center.dy),
-              Offset(rect.right, rect.center.dy),
-              gradient,
-            )
-            ..style = PaintingStyle.fill;
-        }
-        else { // else fill it with whatever color is there
-          _paint
-            ..color = fillColor
-            ..style = PaintingStyle.fill;
-        }
+        // Base left→right gradient colours
+        final List<Color> colors = (gradient != null && gradient.isNotEmpty)
+            ? gradient
+            : <Color>[Colors.white, fillColor];
 
-        // Apply a gradient to the top [rect_top_gradient_pixels] to transparent
-        // if the rectangle is higher than the [drawAreaBounds] top.
-        if (drawAreaBounds != null && bounds.top < drawAreaBounds.top) {
-          debugPrint('outside area');
-          _paint.shader = _createHintGradient(drawAreaBounds.left.toDouble(), drawAreaBounds.top.toDouble(), fill);
-        }
+        // Use even spacing unless you supply explicit stops with matching length
+        final List<double> stops = _evenStops(colors.length);
 
-        canvas.drawRect(_getRect(fillRectBounds), _paint);
-        _paint.shader = null;
+        // Base fill with horizontal gradient
+        _paint
+          ..shader = ui.Gradient.linear(
+            ui.Offset(rect.left, rect.center.dy),
+            ui.Offset(rect.right, rect.center.dy),
+            colors,
+            stops,
+          )
+          ..style = PaintingStyle.fill;
+
+        canvas.drawRect(rect, _paint);
+
+        // Reset shader so future draws aren’t affected
+        //_paint.shader = null;
+
+        // OPTIONAL: fade the top to transparent if the bar sticks above the visible area
+        if (drawAreaBounds != null) {
+          final ui.Rect clip = asUiRect(drawAreaBounds!);
+          if (rect.top < clip.top) {
+            canvas.save();
+            canvas.clipRect(clip); // keep the fade within bounds
+
+            const double fadeHeight = 12.0; // adjust to taste
+            final Paint fadePaint = Paint()
+              ..shader = ui.Gradient.linear(
+                ui.Offset(rect.left, clip.top),
+                ui.Offset(rect.left, clip.top + fadeHeight),
+                const <Color>[Colors.white, Colors.transparent],
+              )
+              ..blendMode = ui.BlendMode.dstIn; // fade existing pixels
+
+            canvas.drawRect(
+              ui.Rect.fromLTWH(rect.left, clip.top, rect.width, fadeHeight),
+              fadePaint,
+            );
+
+            canvas.restore();
+          }
+        }  
         break;
 
       default:
@@ -302,6 +332,7 @@ class ChartCanvas implements common.ChartCanvas {
       drawRect(segment.bounds,
           fill: segment.fill,
           pattern: segment.pattern,
+          gradient: segment.gradient,
           stroke: segment.stroke,
           strokeWidthPx: segment.strokeWidthPx,
           drawAreaBounds: drawAreaBounds);

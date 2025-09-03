@@ -14,6 +14,7 @@
 // limitations under the License.
 
 import 'dart:math' show Point, Rectangle, max, min;
+import 'dart:ui' as ui show Color;
 
 import '../../common/color.dart' show Color;
 import '../../common/math.dart' show NullablePoint;
@@ -143,6 +144,7 @@ class BarTargetLineRenderer<D> extends BaseBarRenderer<D,
       required ImmutableSeries<D> series,
       dynamic datum,
       Color? color,
+      List<ui.Color>? gradient,
       List<int>? dashPattern,
       required _BarTargetLineRendererElement details,
       D? domainValue,
@@ -192,6 +194,7 @@ class BarTargetLineRenderer<D> extends BaseBarRenderer<D,
   @override
   _BarTargetLineRendererElement makeBarRendererElement(
       {Color? color,
+      List<ui.Color>? gradient,
       List<int>? dashPattern,
       required _BarTargetLineRendererElement details,
       D? domainValue,
@@ -213,6 +216,7 @@ class BarTargetLineRenderer<D> extends BaseBarRenderer<D,
       bool? measureIsNegative}) {
     return _BarTargetLineRendererElement(roundEndCaps: details.roundEndCaps)
       ..color = color
+      ..gradient = gradient
       ..dashPattern = dashPattern
       ..fillColor = fillColor
       ..fillPattern = fillPattern

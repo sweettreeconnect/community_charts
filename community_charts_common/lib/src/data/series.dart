@@ -83,7 +83,7 @@ class Series<T, D> {
   final AccessorFn<Color>? colorFn;
 
   /// creates a gradient for each bar
-  final AccessorFn<List<ui.Color>>? gradientFn;
+  final AccessorFn<List<ui.Color>?>? gradientFn;
 
   /// [dashPatternFn] returns the dash pattern for a given data value.
   final AccessorFn<List<int>?>? dashPatternFn;
@@ -117,7 +117,7 @@ class Series<T, D> {
       Color? seriesColor,
       TypedAccessorFn<T, Color>? areaColorFn,
       TypedAccessorFn<T, Color>? colorFn,
-      TypedAccessorFn<T, List<ui.Color>>? gradientFn,
+      TypedAccessorFn<T, List<ui.Color>?>? gradientFn,
       TypedAccessorFn<T, List<int>?>? dashPatternFn,
       TypedAccessorFn<T, DomainFormatter<D>>? domainFormatterFn,
       TypedAccessorFn<T, D?>? domainLowerBoundFn,
