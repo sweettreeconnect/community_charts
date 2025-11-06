@@ -22,6 +22,8 @@ import '../cartesian/axis/axis.dart' show Axis;
 import '../cartesian/axis/spec/axis_spec.dart' show TextStyleSpec;
 import '../common/chart_canvas.dart' show FillPatternType;
 
+
+
 class MutableSeries<D> extends ImmutableSeries<D> {
   @override
   final String id;
