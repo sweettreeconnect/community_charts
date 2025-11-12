@@ -257,7 +257,10 @@ class BarRenderer<D>
 
       measureIsNegative = measureIsNegative || bar.measureIsNegative!;
 
-      if (bar != unmodifiedBar) {
+
+
+      // it seems as though this was what was extending the measure past where we would expect 
+      /* if (bar != unmodifiedBar) {
         bounds = renderingVertically
             ? Rectangle<int>(
                 bar.bounds!.left,
@@ -277,7 +280,7 @@ class BarRenderer<D>
                 max(0, bar.bounds!.width - _stackedBarPaddingPx),
                 bar.bounds!.height,
               );
-      }
+      } */
 
 
       bars.add(CanvasRect(bounds!,
