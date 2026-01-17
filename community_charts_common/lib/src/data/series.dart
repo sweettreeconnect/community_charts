@@ -232,6 +232,44 @@ class Series<T, D> {
     );
   }
 
+  factory Series.clone(
+  Series<T, D> other, {
+  String? id,
+  List<T>? data,
+}) {
+  return Series<T, D>._internal(
+    id: id ?? other.id,
+    data: data ?? List<T>.empty(growable: true),
+    domainFn: other.domainFn,
+    measureFn: other.measureFn,
+    displayName: other.displayName,
+    areaColorFn: other.areaColorFn,
+    colorFn: other.colorFn,
+    gradientFn: other.gradientFn,
+    dashPatternFn: other.dashPatternFn,
+    domainFormatterFn: other.domainFormatterFn,
+    domainLowerBoundFn: other.domainLowerBoundFn,
+    domainUpperBoundFn: other.domainUpperBoundFn,
+    fillColorFn: other.fillColorFn,
+    fillPatternFn: other.fillPatternFn,
+    patternColorFn: other.patternColorFn,
+    keyFn: other.keyFn,
+    labelAccessorFn: other.labelAccessorFn,
+    insideLabelStyleAccessorFn: other.insideLabelStyleAccessorFn,
+    outsideLabelStyleAccessorFn: other.outsideLabelStyleAccessorFn,
+    measureFormatterFn: other.measureFormatterFn,
+    measureLowerBoundFn: other.measureLowerBoundFn,
+    measureUpperBoundFn: other.measureUpperBoundFn,
+    measureOffsetFn: other.measureOffsetFn,
+    overlaySeries: other.overlaySeries,
+    radiusPxFn: other.radiusPxFn,
+    seriesCategory: other.seriesCategory,
+    seriesColor: other.seriesColor,
+    strokeWidthPxFn: other.strokeWidthPxFn,
+  );
+}
+
+
   Series._internal({
     required this.id,
     required this.data,
